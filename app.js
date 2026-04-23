@@ -39,7 +39,9 @@ const STATE = {
   pendingCases: [],
   submittedCases: [],
   selectedFiles: [],
-  supabaseClient: null
+  supabaseClient: null,
+  waitingServiceWorker: null,
+  refreshing: false
 };
 
 const ELS = {
@@ -62,7 +64,9 @@ const ELS = {
   statToday: document.getElementById("statToday"),
   statMonth: document.getElementById("statMonth"),
   statPending: document.getElementById("statPending"),
-  syncBtn: document.getElementById("syncBtn")
+  syncBtn: document.getElementById("syncBtn"),
+  updateToast: document.getElementById("updateToast"),
+  updateNowBtn: document.getElementById("updateNowBtn")
 };
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -90,6 +94,9 @@ function bindEvents() {
   ELS.addConsumableBtn.addEventListener("click", addConsumableRow);
   ELS.mediaInput.addEventListener("change", handleMediaPreview);
   ELS.syncBtn.addEventListener("click", syncPendingCases);
+  if (ELS.updateNowBtn) {
+    ELS.updateNowBtn.addEventListener("click", applyUpdateNow);
+  }
   window.addEventListener("online", syncPendingCases);
 }
 
@@ -411,11 +418,54 @@ function isSameDay(a, b) {
 }
 
 function registerPWA() {
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./sw.js").catch((error) => {
-      console.warn("Service worker register failed:", error);
-    });
+  if (!("serviceWorker" in navigator)) {
+    return;
   }
+
+  navigator.serviceWorker.register("./sw.js").then((registration) => {
+    if (registration.waiting) {
+      STATE.waitingServiceWorker = registration.waiting;
+      showUpdateToast();
+    }
+
+    registration.addEventListener("updatefound", () => {
+      const installingWorker = registration.installing;
+      if (!installingWorker) {
+        return;
+      }
+      installingWorker.addEventListener("statechange", () => {
+        if (installingWorker.state === "installed" && navigator.serviceWorker.controller) {
+          STATE.waitingServiceWorker = registration.waiting || installingWorker;
+          showUpdateToast();
+        }
+      });
+    });
+
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (STATE.refreshing) {
+        return;
+      }
+      STATE.refreshing = true;
+      window.location.reload();
+    });
+  }).catch((error) => {
+    console.warn("Service worker register failed:", error);
+  });
+}
+
+function showUpdateToast() {
+  if (!ELS.updateToast) {
+    return;
+  }
+  ELS.updateToast.classList.remove("is-hidden");
+}
+
+function applyUpdateNow() {
+  if (!STATE.waitingServiceWorker) {
+    window.location.reload();
+    return;
+  }
+  STATE.waitingServiceWorker.postMessage({ type: "SKIP_WAITING" });
 }
 
 function openDB() {
