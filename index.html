@@ -1,275 +1,127 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>临床跟台系统</title>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <style>
-        :root {
-            --primary: #0d9488; --bg: #f8fafc; --surface: #ffffff; 
-            --text: #1e293b; --border: #e2e8f0; --danger: #ef4444;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
-        body { background: var(--bg); color: var(--text); padding-bottom: 20px; }
-        
-        .container { max-width: 500px; margin: 0 auto; padding: 20px; }
-        .card { background: var(--surface); padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        
-        h1, h2 { text-align: center; color: var(--primary); margin-bottom: 20px; }
-        
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-size: 14px; font-weight: 600; color: #64748b; margin-bottom: 8px; }
-        .form-control { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; outline: none; }
-        .form-control:focus { border-color: var(--primary); }
-        
-        .btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn:disabled { background: #94a3b8; cursor: not-allowed; }
-        
-        /* 图片预览区 */
-        #imagePreview { max-width: 100%; border-radius: 8px; margin-top: 10px; display: none; }
-        .hidden { display: none !important; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f766e">
+  <title>临床跟台 Case Support</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
+  <div class="app-shell">
+    <header class="topbar">
+      <h1>临床跟台</h1>
+      <button id="syncBtn" class="ghost-btn" type="button">同步离线数据</button>
+    </header>
 
-    <div id="loginView" class="container">
-        <div class="card">
-            <h2>工程师登录</h2>
-            <div class="form-group">
-                <label>邮箱账号</label>
-                <input type="email" id="email" class="form-control" placeholder="输入你在Supabase创建的邮箱">
-            </div>
-            <div class="form-group">
-                <label>密码</label>
-                <input type="password" id="password" class="form-control" placeholder="******">
-            </div>
-            <button class="btn" onclick="handleLogin()" id="loginBtn">登录</button>
-            <p id="loginError" style="color: var(--danger); font-size: 14px; margin-top: 10px; text-align: center;"></p>
+    <main>
+      <section id="dashboardView" class="view is-active">
+        <div class="card welcome-card">
+          <h2>今日工作台</h2>
+          <p id="welcomeText">欢迎回来，工程师。</p>
+          <div class="stats-grid">
+            <article class="stat">
+              <span class="stat-label">今日任务</span>
+              <strong id="statToday">0</strong>
+            </article>
+            <article class="stat">
+              <span class="stat-label">本月场次</span>
+              <strong id="statMonth">0</strong>
+            </article>
+            <article class="stat">
+              <span class="stat-label">待同步</span>
+              <strong id="statPending">0</strong>
+            </article>
+          </div>
         </div>
-    </div>
 
-    <div id="appView" class="container hidden">
         <div class="card">
+          <div class="card-title-row">
+            <h3>最近 3 场手术</h3>
+          </div>
+          <ul id="recentCaseList" class="case-list"></ul>
+        </div>
+      </section>
+
+      <section id="caseFormView" class="view">
+        <div class="card">
+          <div class="card-title-row">
             <h2>新建跟台记录</h2>
-            <div style="text-align: right; margin-bottom: 15px;">
-                <span id="userEmail" style="font-size: 12px; color: #64748b;"></span>
-                <button onclick="handleLogout()" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:12px; margin-left: 10px;">退出</button>
+            <button id="backBtn" class="ghost-btn" type="button">返回</button>
+          </div>
+
+          <div class="stepper" aria-label="分步表单">
+            <div class="step is-active" data-step="1"><span>1</span>基础信息</div>
+            <div class="step" data-step="2"><span>2</span>术中参数</div>
+            <div class="step" data-step="3"><span>3</span>耗材使用</div>
+            <div class="step" data-step="4"><span>4</span>总结与图片</div>
+          </div>
+
+          <form id="caseForm" novalidate>
+            <div class="form-step is-active" data-step="1">
+              <label class="field-label" for="hospitalSearch">合作医院</label>
+              <input id="hospitalSearch" list="hospitalOptions" class="field" placeholder="搜索并选择医院">
+              <datalist id="hospitalOptions"></datalist>
+
+              <label class="field-label" for="doctorName">手术医生</label>
+              <input id="doctorName" class="field" placeholder="请输入医生姓名" required>
+
+              <label class="field-label" for="surgeryType">手术类型</label>
+              <input id="surgeryType" class="field" placeholder="例如：腹腔镜胆囊切除术">
+
+              <label class="field-label" for="deviceModel">器械型号</label>
+              <select id="deviceModel" class="field" required></select>
             </div>
 
-            <div class="form-group">
-                <label>选择医院</label>
-                <select id="hospital" class="form-control">
-                    <option value="北京协和医院">北京协和医院</option>
-                    <option value="上海瑞金医院">上海瑞金医院</option>
-                    <option value="广州南方医院">广州南方医院</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>手术医生</label>
-                <input type="text" id="doctor_name" class="form-control" placeholder="主刀医生姓名">
-            </div>
-            <div class="form-group">
-                <label>器械型号</label>
-                <select id="device_model" class="form-control">
-                    <option value="US-Pro">超声刀系统 US-Pro</option>
-                    <option value="Endocam">内窥镜摄像系统 Endocam</option>
-                </select>
+            <div class="form-step" data-step="2">
+              <div id="dynamicParameters"></div>
+
+              <div class="switch-row">
+                <span>是否异常</span>
+                <label class="switch">
+                  <input id="isAbnormal" type="checkbox">
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <label class="field-label" for="outcome">术中结果</label>
+              <textarea id="outcome" class="field" rows="3" placeholder="简要记录术中结果"></textarea>
             </div>
 
-            <div style="display: flex; gap: 10px;">
-                <div class="form-group" style="flex: 1;">
-                    <label>功率 (W)</label>
-                    <input type="number" id="power_w" class="form-control" placeholder="0.0">
+            <div class="form-step" data-step="3">
+              <div class="card-inline">
+                <div class="card-title-row">
+                  <h3>耗材追踪</h3>
+                  <button id="addConsumableBtn" type="button" class="mini-btn">添加耗材</button>
                 </div>
-                <div class="form-group" style="flex: 1;">
-                    <label>压力 (kPa)</label>
-                    <input type="number" id="pressure_kpa" class="form-control" placeholder="0.0">
-                </div>
+                <div id="consumableList"></div>
+              </div>
             </div>
 
-            <div class="form-group">
-                <label>现场图片 (自动压缩)</label>
-                <input type="file" id="imageInput" accept="image/*" class="form-control" onchange="processImage(event)">
-                <p style="font-size: 12px; color: #64748b; margin-top: 5px;" id="compressionInfo"></p>
-                <img id="imagePreview" src="" alt="预览图">
+            <div class="form-step" data-step="4">
+              <label class="field-label" for="complications">并发症/风险说明</label>
+              <textarea id="complications" class="field" rows="3" placeholder="无可留空"></textarea>
+
+              <label class="field-label" for="mediaInput">图片/视频上传</label>
+              <input id="mediaInput" type="file" class="field" accept="image/*,video/*" capture="environment" multiple>
+              <div id="mediaPreview" class="media-preview">暂无文件</div>
             </div>
 
-            <button class="btn" onclick="submitCase()" id="submitBtn">提交记录</button>
+            <div class="form-actions">
+              <button id="prevStepBtn" type="button" class="secondary-btn">上一步</button>
+              <button id="nextStepBtn" type="button" class="primary-btn">下一步</button>
+              <button id="submitBtn" type="submit" class="primary-btn is-hidden">提交记录</button>
+            </div>
+          </form>
         </div>
-    </div>
+      </section>
+    </main>
 
-    <script>
-        // ================= 1. 初始化 Supabase =================
-        const SUPABASE_URL = 'https://rcdwxpckyeloqbwoggbq.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_PqGg_I2ElFiWkU1BHAY72w_0HlZQRcZ';
+    <button id="newCaseFab" class="fab" type="button">新建跟台记录</button>
+  </div>
 
-        // 【关键修复】：将变量名改为 supabaseClient，避免与 CDN 加载的全局 supabase 对象产生名称冲突
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        let currentUser = null;
-        let compressedImageFile = null;
-
-        // 页面加载时检查登录状态
-        window.onload = async () => {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (session) {
-                currentUser = session.user;
-                showApp();
-            }
-        };
-
-        // ================= 2. 身份认证逻辑 =================
-        async function handleLogin() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const btn = document.getElementById('loginBtn');
-            const errorMsg = document.getElementById('loginError');
-            
-            btn.innerText = '登录中...';
-            btn.disabled = true;
-            errorMsg.innerText = '';
-
-            // 【使用新变量 supabaseClient】
-            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-
-            if (error) {
-                errorMsg.innerText = error.message;
-                btn.innerText = '登录';
-                btn.disabled = false;
-            } else {
-                currentUser = data.user;
-                showApp();
-            }
-        }
-
-        async function handleLogout() {
-            await supabaseClient.auth.signOut();
-            currentUser = null;
-            document.getElementById('loginView').classList.remove('hidden');
-            document.getElementById('appView').classList.add('hidden');
-            document.getElementById('email').value = '';
-            document.getElementById('password').value = '';
-            document.getElementById('loginError').innerText = '';
-        }
-
-        function showApp() {
-            document.getElementById('loginView').classList.add('hidden');
-            document.getElementById('appView').classList.remove('hidden');
-            document.getElementById('userEmail').innerText = currentUser.email;
-        }
-
-        // ================= 3. 纯前端图片压缩 =================
-        function processImage(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const originalSize = (file.size / 1024 / 1024).toFixed(2);
-            const reader = new FileReader();
-
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-
-                    const MAX_WIDTH = 1200;
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > MAX_WIDTH) {
-                        height = Math.round(height *= MAX_WIDTH / width);
-                        width = MAX_WIDTH;
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    canvas.toBlob((blob) => {
-                        const compressedSize = (blob.size / 1024 / 1024).toFixed(2);
-                        document.getElementById('compressionInfo').innerText = 
-                            `压缩完成: 原图 ${originalSize}MB -> 压缩后 ${compressedSize}MB`;
-                        
-                        const preview = document.getElementById('imagePreview');
-                        preview.src = URL.createObjectURL(blob);
-                        preview.style.display = 'block';
-
-                        compressedImageFile = new File([blob], `case_${Date.now()}.jpg`, {
-                            type: 'image/jpeg',
-                            lastModified: Date.now()
-                        });
-                    }, 'image/jpeg', 0.7);
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // ================= 4. 数据与文件提交 =================
-        async function submitCase() {
-            if (!document.getElementById('doctor_name').value) {
-                alert('请填写医生姓名！');
-                return;
-            }
-
-            const btn = document.getElementById('submitBtn');
-            btn.innerText = '正在上传数据...';
-            btn.disabled = true;
-
-            let imageUrl = null;
-
-            try {
-                if (compressedImageFile) {
-                    const filePath = `${currentUser.id}/${compressedImageFile.name}`;
-                    // 【使用新变量 supabaseClient】上传文件
-                    const { data: uploadData, error: uploadError } = await supabaseClient.storage
-                        .from('case-images')
-                        .upload(filePath, compressedImageFile);
-
-                    if (uploadError) throw uploadError;
-
-                    const { data: publicUrlData } = supabaseClient.storage
-                        .from('case-images')
-                        .getPublicUrl(filePath);
-                    imageUrl = publicUrlData.publicUrl;
-                }
-
-                const caseData = {
-                    engineer_id: currentUser.id,
-                    hospital: document.getElementById('hospital').value,
-                    doctor_name: document.getElementById('doctor_name').value,
-                    device_model: document.getElementById('device_model').value,
-                    power_w: parseFloat(document.getElementById('power_w').value) || 0,
-                    pressure_kpa: parseFloat(document.getElementById('pressure_kpa').value) || 0,
-                    image_url: imageUrl
-                };
-
-                // 【使用新变量 supabaseClient】插入数据库
-                const { error: insertError } = await supabaseClient
-                    .from('clinical_cases')
-                    .insert([caseData]);
-
-                if (insertError) throw insertError;
-
-                alert('跟台记录提交成功！');
-                
-                document.getElementById('doctor_name').value = '';
-                document.getElementById('power_w').value = '';
-                document.getElementById('pressure_kpa').value = '';
-                document.getElementById('imageInput').value = '';
-                document.getElementById('imagePreview').style.display = 'none';
-                document.getElementById('compressionInfo').innerText = '';
-                compressedImageFile = null;
-
-            } catch (error) {
-                console.error('上传完整错误信息:', error);
-                alert('提交失败: ' + error.message);
-            } finally {
-                btn.innerText = '提交记录';
-                btn.disabled = false;
-            }
-        }
-    </script>
+  <script src="./app.js"></script>
 </body>
 </html>
