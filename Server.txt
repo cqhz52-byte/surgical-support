@@ -1,0 +1,8 @@
+Supabase 数据库脚本已迁移到：
+
+`/supabase/schema.sql`
+
+使用方式：
+1. 在 Supabase SQL Editor 中打开并执行 `schema.sql`。
+2. 前端 `app.js` 中填写 `APP_CONFIG.supabaseUrl` 与 `APP_CONFIG.supabaseAnonKey`。
+3. 启动静态服务后访问 `index.html`，离线数据会缓存到 IndexedDB，联网后可手动/自动同步。
