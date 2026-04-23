@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0f766e">
-  <title>临床跟台 Case Support</title>
+  <title>涓村簥璺熷彴 Case Support</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="stylesheet" href="./styles.css">
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -12,26 +12,26 @@
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <h1>临床跟台</h1>
-      <button id="syncBtn" class="ghost-btn" type="button">同步离线数据</button>
+      <h1>涓村簥璺熷彴</h1>
+      <button id="syncBtn" class="ghost-btn" type="button">鍚屾绂荤嚎鏁版嵁</button>
     </header>
 
     <main>
       <section id="dashboardView" class="view is-active">
         <div class="card welcome-card">
-          <h2>今日工作台</h2>
-          <p id="welcomeText">欢迎回来，工程师。</p>
+          <h2>浠婃棩宸ヤ綔鍙?/h2>
+          <p id="welcomeText">娆㈣繋鍥炴潵锛屽伐绋嬪笀銆?/p>
           <div class="stats-grid">
             <article class="stat">
-              <span class="stat-label">今日任务</span>
+              <span class="stat-label">浠婃棩浠诲姟</span>
               <strong id="statToday">0</strong>
             </article>
             <article class="stat">
-              <span class="stat-label">本月场次</span>
+              <span class="stat-label">鏈湀鍦烘</span>
               <strong id="statMonth">0</strong>
             </article>
             <article class="stat">
-              <span class="stat-label">待同步</span>
+              <span class="stat-label">寰呭悓姝?/span>
               <strong id="statPending">0</strong>
             </article>
           </div>
@@ -39,7 +39,7 @@
 
         <div class="card">
           <div class="card-title-row">
-            <h3>最近 3 场手术</h3>
+            <h3>鏈€杩?3 鍦烘墜鏈?/h3>
           </div>
           <ul id="recentCaseList" class="case-list"></ul>
         </div>
@@ -48,30 +48,30 @@
       <section id="caseFormView" class="view">
         <div class="card">
           <div class="card-title-row">
-            <h2>新建跟台记录</h2>
-            <button id="backBtn" class="ghost-btn" type="button">返回</button>
+            <h2>鏂板缓璺熷彴璁板綍</h2>
+            <button id="backBtn" class="ghost-btn" type="button">杩斿洖</button>
           </div>
 
-          <div class="stepper" aria-label="分步表单">
-            <div class="step is-active" data-step="1"><span>1</span>基础信息</div>
-            <div class="step" data-step="2"><span>2</span>术中参数</div>
-            <div class="step" data-step="3"><span>3</span>耗材使用</div>
-            <div class="step" data-step="4"><span>4</span>总结与图片</div>
+          <div class="stepper" aria-label="鍒嗘琛ㄥ崟">
+            <div class="step is-active" data-step="1"><span>1</span>鍩虹淇℃伅</div>
+            <div class="step" data-step="2"><span>2</span>鏈腑鍙傛暟</div>
+            <div class="step" data-step="3"><span>3</span>鑰楁潗浣跨敤</div>
+            <div class="step" data-step="4"><span>4</span>鎬荤粨涓庡浘鐗?/div>
           </div>
 
           <form id="caseForm" novalidate>
             <div class="form-step is-active" data-step="1">
-              <label class="field-label" for="hospitalSearch">合作医院</label>
-              <input id="hospitalSearch" list="hospitalOptions" class="field" placeholder="搜索并选择医院">
+              <label class="field-label" for="hospitalSearch">鍚堜綔鍖婚櫌</label>
+              <input id="hospitalSearch" list="hospitalOptions" class="field" placeholder="鎼滅储骞堕€夋嫨鍖婚櫌">
               <datalist id="hospitalOptions"></datalist>
 
-              <label class="field-label" for="doctorName">手术医生</label>
-              <input id="doctorName" class="field" placeholder="请输入医生姓名" required>
+              <label class="field-label" for="doctorName">鎵嬫湳鍖荤敓</label>
+              <input id="doctorName" class="field" placeholder="璇疯緭鍏ュ尰鐢熷鍚? required>
 
-              <label class="field-label" for="surgeryType">手术类型</label>
-              <input id="surgeryType" class="field" placeholder="例如：腹腔镜胆囊切除术">
+              <label class="field-label" for="surgeryType">鎵嬫湳绫诲瀷</label>
+              <input id="surgeryType" class="field" placeholder="渚嬪锛氳吂鑵旈暅鑳嗗泭鍒囬櫎鏈?>
 
-              <label class="field-label" for="deviceModel">器械型号</label>
+              <label class="field-label" for="deviceModel">鍣ㄦ鍨嬪彿</label>
               <select id="deviceModel" class="field" required></select>
             </div>
 
@@ -79,49 +79,55 @@
               <div id="dynamicParameters"></div>
 
               <div class="switch-row">
-                <span>是否异常</span>
+                <span>鏄惁寮傚父</span>
                 <label class="switch">
                   <input id="isAbnormal" type="checkbox">
                   <span class="slider"></span>
                 </label>
               </div>
 
-              <label class="field-label" for="outcome">术中结果</label>
-              <textarea id="outcome" class="field" rows="3" placeholder="简要记录术中结果"></textarea>
+              <label class="field-label" for="outcome">鏈腑缁撴灉</label>
+              <textarea id="outcome" class="field" rows="3" placeholder="绠€瑕佽褰曟湳涓粨鏋?></textarea>
             </div>
 
             <div class="form-step" data-step="3">
               <div class="card-inline">
                 <div class="card-title-row">
-                  <h3>耗材追踪</h3>
-                  <button id="addConsumableBtn" type="button" class="mini-btn">添加耗材</button>
+                  <h3>鑰楁潗杩借釜</h3>
+                  <button id="addConsumableBtn" type="button" class="mini-btn">娣诲姞鑰楁潗</button>
                 </div>
                 <div id="consumableList"></div>
               </div>
             </div>
 
             <div class="form-step" data-step="4">
-              <label class="field-label" for="complications">并发症/风险说明</label>
-              <textarea id="complications" class="field" rows="3" placeholder="无可留空"></textarea>
+              <label class="field-label" for="complications">骞跺彂鐥?椋庨櫓璇存槑</label>
+              <textarea id="complications" class="field" rows="3" placeholder="鏃犲彲鐣欑┖"></textarea>
 
-              <label class="field-label" for="mediaInput">图片/视频上传</label>
+              <label class="field-label" for="mediaInput">鍥剧墖/瑙嗛涓婁紶</label>
               <input id="mediaInput" type="file" class="field" accept="image/*,video/*" capture="environment" multiple>
-              <div id="mediaPreview" class="media-preview">暂无文件</div>
+              <div id="mediaPreview" class="media-preview">鏆傛棤鏂囦欢</div>
             </div>
 
             <div class="form-actions">
-              <button id="prevStepBtn" type="button" class="secondary-btn">上一步</button>
-              <button id="nextStepBtn" type="button" class="primary-btn">下一步</button>
-              <button id="submitBtn" type="submit" class="primary-btn is-hidden">提交记录</button>
+              <button id="prevStepBtn" type="button" class="secondary-btn">涓婁竴姝?/button>
+              <button id="nextStepBtn" type="button" class="primary-btn">涓嬩竴姝?/button>
+              <button id="submitBtn" type="submit" class="primary-btn is-hidden">鎻愪氦璁板綍</button>
             </div>
           </form>
         </div>
       </section>
     </main>
 
-    <button id="newCaseFab" class="fab" type="button">新建跟台记录</button>
+    <button id="newCaseFab" class="fab" type="button">鏂板缓璺熷彴璁板綍</button>
+    <section id="updateToast" class="update-toast is-hidden" aria-live="polite">
+      <p>发现新版本，建议立即更新以避免缓存旧页面。</p>
+      <button id="updateNowBtn" class="primary-btn" type="button">立即更新</button>
+    </section>
   </div>
 
   <script src="./app.js"></script>
 </body>
 </html>
+
+
