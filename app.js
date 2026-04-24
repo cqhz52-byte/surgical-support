@@ -85,6 +85,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await refreshLocalData();
   updateDashboard();
   bindEvents();
+  applyStartupRoute();
 });
 
 function bindEvents() {
@@ -449,7 +450,7 @@ function initInstallPrompt() {
 
 async function handleInstallClick() {
   if (!STATE.deferredInstallPrompt) {
-    alert("当前设备未触发安装条件，请稍后重试。");
+    alert("当前浏览环境未触发可安装条件。建议在系统浏览器（优先 Chrome）打开后，使用“安装应用/添加到主屏幕”。");
     return;
   }
 
@@ -462,6 +463,21 @@ async function handleInstallClick() {
     return;
   }
   ELS.installBtn.classList.add("is-hidden");
+  if (isEdgeAndroid()) {
+    alert("已完成安装请求。提示：在 Edge 中安装时，桌面图标可能带 Edge 标识，这是浏览器行为。若想更像独立 App，请改用 Chrome 安装。");
+  }
+}
+
+function isEdgeAndroid() {
+  const ua = navigator.userAgent || "";
+  return /EdgA/i.test(ua);
+}
+
+function applyStartupRoute() {
+  const action = new URLSearchParams(window.location.search).get("action");
+  if (action === "new-case") {
+    showView("form");
+  }
 }
 
 function registerPWA() {
