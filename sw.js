@@ -1,5 +1,15 @@
-const CACHE_NAME = "case-support-v2";
-const APP_ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.json"];
+const CACHE_NAME = "case-support-v3";
+const APP_ASSETS = [
+  "./",
+  "./index.html",
+  "./styles.css",
+  "./app.js",
+  "./manifest.json",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png",
+  "./icons/icon-512-maskable.png",
+  "./icons/apple-touch-icon.png"
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
