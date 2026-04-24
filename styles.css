@@ -36,6 +36,12 @@ body {
   margin-bottom: 14px;
 }
 
+.topbar-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .topbar h1 {
   margin: 0;
   font-size: 1.2rem;
