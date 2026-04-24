@@ -41,7 +41,8 @@ const STATE = {
   selectedFiles: [],
   supabaseClient: null,
   waitingServiceWorker: null,
-  refreshing: false
+  refreshing: false,
+  deferredInstallPrompt: null
 };
 
 const ELS = {
@@ -64,6 +65,7 @@ const ELS = {
   statToday: document.getElementById("statToday"),
   statMonth: document.getElementById("statMonth"),
   statPending: document.getElementById("statPending"),
+  installBtn: document.getElementById("installBtn"),
   syncBtn: document.getElementById("syncBtn"),
   updateToast: document.getElementById("updateToast"),
   updateNowBtn: document.getElementById("updateNowBtn")
@@ -77,6 +79,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   initSupabase();
   registerPWA();
+  initInstallPrompt();
 
   STATE.db = await openDB();
   await refreshLocalData();
@@ -94,6 +97,9 @@ function bindEvents() {
   ELS.addConsumableBtn.addEventListener("click", addConsumableRow);
   ELS.mediaInput.addEventListener("change", handleMediaPreview);
   ELS.syncBtn.addEventListener("click", syncPendingCases);
+  if (ELS.installBtn) {
+    ELS.installBtn.addEventListener("click", handleInstallClick);
+  }
   if (ELS.updateNowBtn) {
     ELS.updateNowBtn.addEventListener("click", applyUpdateNow);
   }
@@ -415,6 +421,45 @@ function formatDate(dateInput) {
 
 function isSameDay(a, b) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function initInstallPrompt() {
+  if (!ELS.installBtn) {
+    return;
+  }
+
+  if (window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone) {
+    ELS.installBtn.classList.add("is-hidden");
+    return;
+  }
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    STATE.deferredInstallPrompt = event;
+    ELS.installBtn.classList.remove("is-hidden");
+  });
+
+  window.addEventListener("appinstalled", () => {
+    STATE.deferredInstallPrompt = null;
+    ELS.installBtn.classList.add("is-hidden");
+  });
+}
+
+async function handleInstallClick() {
+  if (!STATE.deferredInstallPrompt) {
+    alert("当前设备未触发安装条件，请稍后重试。");
+    return;
+  }
+
+  STATE.deferredInstallPrompt.prompt();
+  const choiceResult = await STATE.deferredInstallPrompt.userChoice;
+  STATE.deferredInstallPrompt = null;
+
+  if (choiceResult.outcome !== "accepted") {
+    ELS.installBtn.classList.remove("is-hidden");
+    return;
+  }
+  ELS.installBtn.classList.add("is-hidden");
 }
 
 function registerPWA() {
