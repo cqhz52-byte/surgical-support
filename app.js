@@ -1,4 +1,4 @@
-const APP_CONFIG = {
+﻿const APP_CONFIG = {
   supabaseUrl: "",
   supabaseAnonKey: ""
 };
@@ -97,12 +97,14 @@ function bindEvents() {
   ELS.addConsumableBtn.addEventListener("click", addConsumableRow);
   ELS.mediaInput.addEventListener("change", handleMediaPreview);
   ELS.syncBtn.addEventListener("click", syncPendingCases);
+
   if (ELS.installBtn) {
     ELS.installBtn.addEventListener("click", handleInstallClick);
   }
   if (ELS.updateNowBtn) {
     ELS.updateNowBtn.addEventListener("click", applyUpdateNow);
   }
+
   window.addEventListener("online", syncPendingCases);
 }
 
